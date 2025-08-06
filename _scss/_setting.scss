@@ -1,0 +1,290 @@
+@use "sass:math";
+
+//-------------------------------------
+
+//mixin
+
+//--------------------------------------
+
+// Round
+@function round-decimal ($number, $digits: 0) {
+    @return to-fixed($number, $digits, 'round');
+}
+
+// Ceil
+@function ceil-decimal ($number, $digits: 0) {
+    @return to-fixed($number, $digits, 'ceil');
+}
+
+// Floor
+@function floor-decimal ($number, $digits: 0) {
+    @return to-fixed($number, $digits, 'floor');
+}
+
+@function to-fixed ($number, $digits: 0, $round: 'round') {
+    $n: 1;
+    // $number must be a number
+    @if type-of($number) != number {
+        @warn '#{ $number } is not a number.';
+        @return $number;
+    }
+    // $digits must be a unitless number
+    @if type-of($digits) != number {
+        @warn '#{ $digits } is not a number.';
+        @return $number;
+    } @else if not unitless($digits) {
+        @warn '#{ $digits } has a unit.';
+        @return $number;
+    }
+    @for $i from 1 through $digits {
+        $n: $n * 10;
+    }
+    @if $round == 'round' {
+        @return round($number * $n) / $n;
+    } @else if $round == 'ceil' {
+        @return ceil($number * $n) / $n;
+    } @else if $round == 'floor' {
+        @return floor($number * $n) / $n;
+    } @else {
+        @warn '#{ $round } is undefined keyword.';
+        @return $number;
+    }
+}
+
+//font
+@mixin font-zen-gothic-new{
+    font-family: 'Zen Kaku Gothic New', Helvetica, Arial, 'Hiragino Sans', YuGothic,'Yu Gothic medium', sans-serif;
+}
+@mixin font-maru-gothic{
+    font-family: 'Zen Maru Gothic', Helvetica, Arial, 'Hiragino Sans', YuGothic,'Yu Gothic medium', sans-serif;
+}
+@mixin font-noto{
+    font-family: 'Noto Sans JP', Helvetica, Arial, 'Hiragino Sans', YuGothic,'Yu Gothic medium', sans-serif;
+}
+@mixin font-serif{
+    font-family: 'Noto Serif JP', YuMincho, "Yu Mincho", "Hiragino Mincho ProN", serif;
+}
+@mixin font-shippori-mincho-b1{
+    font-family: 'Shippori Mincho B1', YuMincho, "Yu Mincho", "Hiragino Mincho ProN", serif;
+}
+@mixin font-josefin{
+    font-family: "Josefin Sans", sans-serif;
+}
+@mixin font-default{
+    @include font-zen-gothic-new;
+}
+
+//kenten
+@mixin kenten_bg($color:currentColor) {
+    @content;
+	padding: $mar-base/5 0;
+    //background: radial-gradient(0.11em 0.11em at center center, $color 80%, transparent 96%) repeat-x left top/#{$mar-base/1.6} #{$mar-base/2.5};
+    background: radial-gradient(0.11em 0.11em at center center, $color 80%, transparent 96%) repeat-x left top/100% #{$mar-base/2.5};
+}
+@mixin kenten($color:currentColor) {
+    @content;
+    text-emphasis: dot $color;
+    -webkit-text-emphasis: filled $color;
+    &.kenten_js{
+        text-emphasis: none;
+        -webkit-text-emphasis: none;
+        >span{
+            @include kenten_bg($color);
+        }
+    }
+}
+
+//text glow
+@mixin glow($col:#fff,$blur:$mar-base/16,$num:40){
+    $value: null;
+    @for $i from 1 through $num{
+        $theShadow: 0 0 $blur $col;
+        $value: append($value, $theShadow, comma)
+    }
+    text-shadow: $value;
+}
+
+//fukidashi
+@mixin fukidashi($color:#fff){
+    position: relative;
+    background: $color;
+    &::before{
+        content: '▼';
+        line-height: 1.04;
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        transform: translate(-50%,-48%) scaleX(1.2);
+        color: $color;
+    }
+}
+
+//grad_text
+@mixin grad_text($d:90deg,$c1:#000,$c2:#ccc){
+	display: inline-block;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+	background-image: linear-gradient($d,$c1,$c2);
+}
+
+//marker
+@mixin marker($color:$yellow){
+    position: relative;
+    padding: 0 round-decimal($mar-base/3,3);
+    line-height: 1.68;
+    &::before{
+        content: '';
+        width: 100%;
+        height: round-decimal($mar-base/3,3);
+        background: $color;
+        position: absolute;
+        left: 0;
+        bottom: $mar-base/16;
+        z-index: -1;
+        border-radius: $mar-base;
+    }
+}
+
+//bg stripe
+@mixin stripe($c1:#000,$c2:#999,$sz1:2px,$sz2:6px,$deg:-45deg){
+	background-image: repeating-linear-gradient($deg, $c1, $c1 $sz1, $c2 0, $c2 $sz2);
+}
+@mixin stripe_underline($c1:$text){
+    $c2:rgba($c1,0);
+    $sz1:1px;
+    $sz2:max(#{szpc(8)}, #{$mar-base/8});
+    $sz3:max(#{sz(8)}, #{$mar-base/8});
+    $deg:-45deg;
+    background: repeating-linear-gradient($deg, $c1, $c1 $sz1, $c2 0, $c2 $sz2) no-repeat center bottom/100% max(#{szpc(6)}, #{$mar-base/8});
+    padding-bottom: max(#{szpc(8)}, #{$mar-base/5});
+    @media (max-width: $w) {
+        background: repeating-linear-gradient($deg, $c1, $c1 $sz1, $c2 0, $c2 $sz3) no-repeat center bottom/100% max(#{sz(8)}, #{$mar-base/8});
+        padding-bottom: max(#{sz(8)}, #{$mar-base/8});
+    }
+}
+
+//bg dot
+@mixin dot($color-bd1: currentColor,$pitch: $mar-base/4){
+    $color-bd: rgba(#fff,0);
+    background: radial-gradient($color-bd1 19%, $color-bd 20%) space center/$pitch $pitch;
+}
+
+//bg line
+@mixin bg_dashed($col1:#666,$w1:rem(5),$w2:rem(5*2)){
+    background:
+        repeating-linear-gradient(90deg,$col1,$col1 $w1,rgba($col1,0) 0,rgba($col1,0) $w2) no-repeat left bottom/100% 100%;
+}
+
+//plaid
+@mixin plaid($color-bd1: #eee,$bgc: #fff,$sz: rem(18)){//#E9E9E9
+    background-color: $bgc;
+	$color-bd: rgba(#fff,0);
+	background-image:
+        repeating-linear-gradient(0deg, $color-bd1, $color-bd1 1px, $color-bd 0, $color-bd $sz),
+        repeating-linear-gradient(-90deg, $color-bd1, $color-bd1 1px, $color-bd 0, $color-bd $sz);
+}
+@mixin plaid2($color-bd1: #f5f5f5,$color-bd: #fff,$sz: .5em){
+	$szl: $sz*2;
+	$color-bd2: rgba($color-bd1,.4);
+    background-image:
+        repeating-linear-gradient($color-bd1, $color-bd1 1px, transparent 0, transparent $szl),
+        repeating-linear-gradient(90deg, $color-bd1, $color-bd1 1px, transparent 0, transparent $szl),
+        repeating-linear-gradient($color-bd2, $color-bd2 1px, transparent 0, transparent $sz),
+        repeating-linear-gradient(90deg, $color-bd2, $color-bd2 1px, transparent 0, transparent $sz);
+    background-color: $color-bd;
+}
+
+@mixin pic_btn{
+    position: relative;
+    transition: .4s transform;
+    transform: scale3d(1,1,1);
+    a{
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-indent: 101%;
+        opacity: 0;
+    }
+    &:hover{
+        transform: scale3d(1.04,1.04,1);
+    }
+}
+
+//-------------------------------------
+
+//variable
+
+//--------------------------------------
+
+//module
+$w-sp: 768;
+//$w-pc: 1536;
+$w-pc: 1366;
+
+$bw-sp: $w-sp*1px;
+$bw-pc: $w-pc*1px;
+$bp-sp: $bw-sp+1*1px;
+
+$mar-base: 1.6em;
+
+//media
+@mixin media($media-width) {
+	@if $media-width == sp {
+		@media screen and (max-width: $bw-sp) {
+			@content;
+		}
+	}
+	@else if $media-width == pc {
+		@media screen and (min-width: $bp-sp) {
+			@content;
+		}
+	}
+}
+
+//Reset rem
+@function reset_rem($size) {
+    $rate: $size * 0.01;
+    //@return 100vw / $rate;
+    @return round-decimal(math.div(100vw, $rate),3);
+}
+html {
+	font-size: reset_rem($w-pc);
+	@include media(sp) {
+		font-size: reset_rem($w-sp);
+	}
+}
+
+//Pixels to
+@function sz($value) {
+    @return round-decimal(100vw*($value/$w-sp), 3);
+}
+@function szpc($value) {
+    @return round-decimal(100vw*($value/$w-pc), 3);
+}
+@function rem($value) {
+    @return round-decimal($value*.01rem,3);
+}
+
+@function pd($sp,$pc){
+    //sp %
+    $spp: rem($w-sp*((100-$sp)*.005));
+    //pc px
+    $pcp: rem($pc);
+    @return max($spp, calc((100% - $pcp) * .5));
+}
+
+//color
+$red: red;
+$green: #4CC764;
+$orange: #EB701F;
+$yellow: #FFEF16;
+
+$text: #3E3E3E;
+
+//grad
+$grad1:linear-gradient(#000,#fff,#000);
